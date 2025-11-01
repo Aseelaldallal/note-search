@@ -2,11 +2,11 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "Simple Express backend for file upload",
-  "main": "dist/app.js",
+  "main": "dist/server.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/app.js",
-    "dev": "nodemon --exec ts-node src/app.ts",
+    "start": "node dist/server.js",
+    "dev": "nodemon --exec ts-node src/server.ts",
     "dev:build": "tsc --watch"
   },
   "dependencies": {

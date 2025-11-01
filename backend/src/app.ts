@@ -1,8 +1,11 @@
-import { app } from './server';
+import express from 'express';
+import cors from 'cors';
+import routes from './routes';
 
-const PORT: number = parseInt(process.env.PORT || '5001', 10);
+export const app = express();
 
-// Start server
-app.listen(PORT, (): void => {
-    console.log(`Server is running on port ${PORT}`);
-});
+// Middleware
+app.use(cors());  // TODO: Any website can call API now
+
+// Mount routes
+app.use(routes);
