@@ -1,8 +1,7 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 
-const app = express();
-const PORT: number = parseInt(process.env.PORT || '5001', 10);
+export const app = express();
 
 // Middleware
 app.use(cors());  // TODO: Any website can call API now
@@ -20,8 +19,3 @@ app.post('/api/upload', (_req: Request, res: Response): void => {
   res.json({ message: 'File upload endpoint - implementation pending' });
 });
 
-// Start server
-app.listen(PORT, (): void => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(`Visit http://localhost:${PORT}`);
-});
