@@ -1,17 +1,11 @@
-import { Router, Request, Response } from 'express';
+import { Router } from 'express';
+import { uploadFiles } from './controller';
+import { upload } from './middleware/upload';
 
 const router = Router();
 
-// Health check route
-router.get('/', (_req: Request, res: Response): void => {
-  res.json({ message: 'Backend server is running!' });
-});
-
-// File upload route
-router.post('/api/upload', (_req: Request, res: Response): void => {
-  console.log('Received file upload request');
-  // TODO: Implement file upload logic with multer or similar
-  res.json({ message: 'File upload endpoint - implementation pending' });
-});
+// Upload endpoint with Multer middleware
+// .array('files') matches the field name from the frontend FormData
+router.post('/api/upload', upload.array('files'), uploadFiles);
 
 export default router;
