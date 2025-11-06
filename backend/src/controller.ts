@@ -1,4 +1,11 @@
 import { Request, Response } from 'express';
+import fs from 'fs/promises';
+
+interface Chunk {
+  text: string;
+  filename: string;
+  chunkIndex: number;
+}
 
 export const uploadFiles = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -16,18 +23,38 @@ export const uploadFiles = async (req: Request, res: Response): Promise<void> =>
       console.log(`- ${file.originalname} (${file.size} bytes) -> ${file.path}`);
     });
 
-    // Return success response with file metadata
-    const fileDetails = files.map(file => ({
-      originalName: file.originalname,
-      filename: file.filename,
-      path: file.path,
-      size: file.size,
-      mimetype: file.mimetype
-    }));
+    // Process files and create chunks
+    const allChunks: Chunk[] = [];
 
+    for (const file of files) {
+      // Read file content
+      const content = await fs.readFile(file.path, 'utf-8');
+
+      // Split by double newline (paragraphs)
+      const paragraphs = content
+        .split('\n\n')
+        .map(p => p.trim())
+        .filter(p => p.length > 0); // Remove empty chunks
+
+      // Create chunks with metadata
+      const fileChunks: Chunk[] = paragraphs.map((text, index) => ({
+        text,
+        filename: file.originalname,
+        chunkIndex: index
+      }));
+
+      allChunks.push(...fileChunks);
+
+      console.log(`- ${file.originalname}: Created ${fileChunks.length} chunks`);
+    }
+
+    console.log(`Total chunks created: ${allChunks.length}`);
+
+    // Return success response with chunks
     res.json({
-      message: 'Files uploaded successfully',
-      files: fileDetails
+      message: 'Files uploaded and chunked successfully',
+      totalChunks: allChunks.length,
+      chunks: allChunks
     });
   } catch (error) {
     console.error('Error uploading files:', error);
