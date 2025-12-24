@@ -6,7 +6,8 @@ dotenv.config();
 
 import { app } from './app';
 import { getDatabaseInstance } from './database/db.factory';
-import { shutdownDB } from './shutdown';
+import { getBossInstance } from './queue/boss.factory';
+import { shutdown } from './shutdown';
 
 const PORT: number = parseInt(process.env.PORT || '5001', 10);
 
@@ -14,6 +15,11 @@ async function startServer() {
   try {
     const db = getDatabaseInstance();
     await db.testConnection();
+
+    // Initialize pg-boss
+    await getBossInstance();
+    console.log('✅ pg-boss started');
+
     console.log('✅ Starting server');
 
     app.listen(PORT, () => {
@@ -27,13 +33,13 @@ async function startServer() {
 
 process.on('SIGTERM', async () => {
   console.log('Received SIGTERM');
-  await shutdownDB();
+  await shutdown();
   process.exit(0);
 });
 
 process.on('SIGINT', async () => {
   console.log('Received SIGINT');
-  await shutdownDB();
+  await shutdown();
   process.exit(0);
 });
 
