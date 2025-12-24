@@ -1,4 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Chunk } from '../types';
 import './RetrievedChunks.css';
 
@@ -7,13 +10,32 @@ interface RetrievedChunksProps {
   useReranker: boolean;
 }
 
-const RetrievedChunks: React.FC<RetrievedChunksProps> = ({ chunks, useReranker }) => {
+const TRUNCATE_LENGTH = 100;
+
+const RetrievedChunks: React.FC<RetrievedChunksProps> = ({ chunks }) => {
+  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
+
   const sortedChunks = React.useMemo(() => {
-    if (useReranker) {
-      return [...chunks].sort((a, b) => (b.rerankerScore ?? 0) - (a.rerankerScore ?? 0));
-    }
-    return [...chunks].sort((a, b) => b.vectorScore - a.vectorScore);
-  }, [chunks, useReranker]);
+    return [...chunks].sort((a, b) => b.similarity - a.similarity);
+  }, [chunks]);
+
+  const toggleExpand = (id: number) => {
+    setExpandedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const truncateContent = (content: string) => {
+    if (content.length <= TRUNCATE_LENGTH) return content;
+    return content.substring(0, TRUNCATE_LENGTH) + '...';
+  };
 
   if (chunks.length === 0) {
     return null;
@@ -21,32 +43,80 @@ const RetrievedChunks: React.FC<RetrievedChunksProps> = ({ chunks, useReranker }
 
   return (
     <div className="retrieved-chunks">
-      <div className="chunks-header">
+      <button
+        className="chunks-header"
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        aria-expanded={!isCollapsed}
+      >
         <h2>Retrieved Chunks</h2>
-        <span className="chunks-count">{chunks.length} results</span>
-      </div>
-      <div className="chunks-list">
-        {sortedChunks.map((chunk, index) => (
-          <div key={chunk.id} className="chunk-item">
-            <div className="chunk-meta">
-              <span className="chunk-rank">{index + 1}</span>
-              <span className="chunk-source">{chunk.source}</span>
-              <div className="chunk-scores">
-                <div className="score">
-                  <span className="score-label">Vector</span>
-                  <span className="score-value">{chunk.vectorScore.toFixed(2)}</span>
-                </div>
-                {useReranker && chunk.rerankerScore !== undefined && (
-                  <div className="score reranker">
-                    <span className="score-label">Reranker</span>
-                    <span className="score-value">{chunk.rerankerScore.toFixed(2)}</span>
+        <div className="chunks-header-right">
+          <span className="chunks-count">{chunks.length} results</span>
+          <svg
+            className={`chevron ${!isCollapsed ? 'expanded' : ''}`}
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M6 9L12 15L18 9"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+      </button>
+      <div className={`chunks-list ${!isCollapsed ? 'expanded' : ''}`}>
+        {sortedChunks.map((chunk, index) => {
+          const isExpanded = expandedIds.has(chunk.id);
+          return (
+            <div
+              key={chunk.id}
+              className={`chunk-item ${isExpanded ? 'expanded' : ''}`}
+              onClick={() => toggleExpand(chunk.id)}
+            >
+              <div className="chunk-meta">
+                <span className="chunk-rank">{index + 1}</span>
+                <span className="chunk-source">{chunk.sourceFilename}</span>
+                <div className="chunk-scores">
+                  <div className="score">
+                    <span className="score-label">VECTOR</span>
+                    <span className="score-value">{chunk.similarity.toFixed(2)}</span>
                   </div>
-                )}
+                </div>
+              </div>
+              <div className="chunk-content">
+                <ReactMarkdown
+                  components={{
+                    code({ node, className, children, ...props }) {
+                      const match = /language-(\w+)/.exec(className || '');
+                      const isInline = !match && !className;
+
+                      return isInline ? (
+                        <code className="inline-code" {...props}>
+                          {children}
+                        </code>
+                      ) : (
+                        <SyntaxHighlighter
+                          style={oneLight}
+                          language={match ? match[1] : 'text'}
+                          PreTag="div"
+                        >
+                          {String(children).replace(/\n$/, '')}
+                        </SyntaxHighlighter>
+                      );
+                    },
+                  }}
+                >
+                  {isExpanded ? chunk.content : truncateContent(chunk.content)}
+                </ReactMarkdown>
               </div>
             </div>
-            <p className="chunk-content">{chunk.content}</p>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

@@ -9,8 +9,8 @@ export class SearchController {
     console.log('Received search request:', query);
 
     try {
-      await this.searchService.search(query);
-      res.json({ message: 'Search received' });
+      const result = await this.searchService.search(query);
+      res.json(result);
     } catch (error) {
       console.error('Error handling search request:', error);
       res.status(500).json({ error: 'Failed to handle search request' });

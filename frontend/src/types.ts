@@ -1,10 +1,8 @@
 export interface Chunk {
   id: number;
-  rank: number;
-  source: string;
+  sourceFilename: string;
   content: string;
-  vectorScore: number;
-  rerankerScore?: number;
+  similarity: number;
 }
 
 export interface SearchState {

@@ -1,4 +1,7 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import './LLMAnswer.css';
 
 interface LLMAnswerProps {
@@ -30,9 +33,34 @@ const LLMAnswer: React.FC<LLMAnswerProps> = ({ answer }) => {
             />
           </svg>
         </div>
-        <h2>LLM Answer</h2>
+        <h2>Answer</h2>
       </div>
-      <p className="answer-content">{answer}</p>
+      <div className="answer-content">
+        <ReactMarkdown
+          components={{
+            code({ node, className, children, ...props }) {
+              const match = /language-(\w+)/.exec(className || '');
+              const isInline = !match && !className;
+
+              return isInline ? (
+                <code className="inline-code" {...props}>
+                  {children}
+                </code>
+              ) : (
+                <SyntaxHighlighter
+                  style={oneLight}
+                  language={match ? match[1] : 'text'}
+                  PreTag="div"
+                >
+                  {String(children).replace(/\n$/, '')}
+                </SyntaxHighlighter>
+              );
+            },
+          }}
+        >
+          {answer}
+        </ReactMarkdown>
+      </div>
     </div>
   );
 };

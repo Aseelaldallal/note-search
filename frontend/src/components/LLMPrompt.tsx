@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import './LLMPrompt.css';
 
 interface LLMPromptProps {
@@ -38,7 +41,32 @@ const LLMPrompt: React.FC<LLMPromptProps> = ({ prompt }) => {
         </svg>
       </button>
       <div className={`prompt-content ${isExpanded ? 'expanded' : ''}`}>
-        <pre>{prompt}</pre>
+        <div className="prompt-markdown">
+          <ReactMarkdown
+            components={{
+              code({ node, className, children, ...props }) {
+                const match = /language-(\w+)/.exec(className || '');
+                const isInline = !match && !className;
+
+                return isInline ? (
+                  <code className="inline-code" {...props}>
+                    {children}
+                  </code>
+                ) : (
+                  <SyntaxHighlighter
+                    style={oneLight}
+                    language={match ? match[1] : 'text'}
+                    PreTag="div"
+                  >
+                    {String(children).replace(/\n$/, '')}
+                  </SyntaxHighlighter>
+                );
+              },
+            }}
+          >
+            {prompt}
+          </ReactMarkdown>
+        </div>
       </div>
     </div>
   );

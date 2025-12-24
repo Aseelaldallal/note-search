@@ -1,4 +1,5 @@
 .retrieved-chunks {
+  width: 100%;
   background-color: #eef2ff;
   border-radius: 12px;
   padding: 20px 24px;
@@ -8,7 +9,27 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  width: 100%;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.chunks-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.chunks-header .chevron {
+  color: #6366f1;
+  transition: transform 0.2s ease;
+}
+
+.chunks-header .chevron.expanded {
+  transform: rotate(180deg);
 }
 
 .chunks-header h2 {
@@ -28,15 +49,30 @@
 }
 
 .chunks-list {
-  display: flex;
+  display: none;
   flex-direction: column;
   gap: 12px;
+  margin-top: 16px;
+}
+
+.chunks-list.expanded {
+  display: flex;
 }
 
 .chunk-item {
   background-color: white;
   border-radius: 8px;
   padding: 16px;
+  cursor: pointer;
+  transition: box-shadow 0.2s ease;
+}
+
+.chunk-item:hover {
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
+}
+
+.chunk-item.expanded {
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
 }
 
 .chunk-meta {
@@ -99,6 +135,70 @@
   font-size: 14px;
   color: #374151;
   line-height: 1.6;
+}
+
+.chunk-content p {
+  margin: 0 0 0.5em 0;
+}
+
+.chunk-content p:last-child {
+  margin-bottom: 0;
+}
+
+.chunk-content h1,
+.chunk-content h2,
+.chunk-content h3,
+.chunk-content h4 {
+  margin: 1em 0 0.5em 0;
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.chunk-content h1:first-child,
+.chunk-content h2:first-child,
+.chunk-content h3:first-child {
+  margin-top: 0;
+}
+
+.chunk-content h1 { font-size: 1.3em; }
+.chunk-content h2 { font-size: 1.15em; }
+.chunk-content h3 { font-size: 1em; }
+
+.chunk-content ul,
+.chunk-content ol {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+
+.chunk-content li {
+  margin: 0.25em 0;
+}
+
+.chunk-content strong {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.chunk-content .inline-code {
+  background-color: #f1f5f9;
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Mono', monospace;
+  font-size: 0.9em;
+  color: #334155;
+}
+
+.chunk-content pre {
+  margin: 0.5em 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.chunk-content blockquote {
+  margin: 0.5em 0;
+  padding-left: 1em;
+  border-left: 3px solid #6366f1;
+  color: #64748b;
 }
 
 @media (max-width: 640px) {

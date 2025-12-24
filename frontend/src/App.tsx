@@ -5,9 +5,9 @@ import SearchSection from './components/SearchSection';
 import RetrievedChunks from './components/RetrievedChunks';
 import LLMPrompt from './components/LLMPrompt';
 import LLMAnswer from './components/LLMAnswer';
+import DebugSection from './components/DebugSection';
 import UploadModal from './components/UploadModal';
 import { Chunk } from './types';
-import { mockChunks, mockLLMPrompt, mockLLMAnswer } from './mockData';
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -33,11 +33,9 @@ function App() {
       const data = await response.json();
       console.log('Search response:', data);
 
-      // TODO: Update state with actual response data once backend returns it
-      // For now, still using mock data for display
-      setChunks(mockChunks);
-      setLlmPrompt(mockLLMPrompt);
-      setLlmAnswer(mockLLMAnswer);
+      setChunks(data.chunks);
+      setLlmPrompt(data.prompt);
+      setLlmAnswer(data.answer);
       setHasSearched(true);
     } catch (error) {
       console.error('Search failed:', error);
@@ -60,9 +58,11 @@ function App() {
 
           {hasSearched && (
             <>
-              <RetrievedChunks chunks={chunks} useReranker={useReranker} />
-              <LLMPrompt prompt={llmPrompt} />
               <LLMAnswer answer={llmAnswer} />
+              <DebugSection>
+                <RetrievedChunks chunks={chunks} useReranker={useReranker} />
+                <LLMPrompt prompt={llmPrompt} />
+              </DebugSection>
             </>
           )}
         </div>

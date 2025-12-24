@@ -1,0 +1,74 @@
+.debug-section {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.debug-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.debug-header:hover {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.debug-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.debug-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background-color: #6366f1;
+  border-radius: 8px;
+  color: white;
+}
+
+.debug-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.debug-badge {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6366f1;
+  background-color: #eef2ff;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.debug-header .chevron {
+  color: #94a3b8;
+  transition: transform 0.2s ease;
+}
+
+.debug-header .chevron.expanded {
+  transform: rotate(180deg);
+}
+
+.debug-content {
+  display: none;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.debug-content.expanded {
+  display: flex;
+}
