@@ -100,7 +100,7 @@ const RetrievedChunks: React.FC<RetrievedChunksProps> = ({ chunks, useReranker }
               Reranker
             </button>
           </div>
-          <span className="context-note">Top 10 reranked results used for LLM context</span>
+          <span className="context-note">When reranker is enabled, only chunks with score &gt; 0.5 are used for LLM context</span>
         </div>
       )}
       <div className={`chunks-list ${!isCollapsed ? 'expanded' : ''}`}>

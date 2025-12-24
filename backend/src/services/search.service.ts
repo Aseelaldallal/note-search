@@ -4,6 +4,7 @@ import { ChunkerService } from './chunker.service';
 
 const SIMILARITY_LIMIT = 20;
 const LLM_CONTEXT_LIMIT = 10;
+const RERANKER_SCORE_THRESHOLD = 0.3;
 
 interface SearchResultChunk {
   id: number;
@@ -17,6 +18,7 @@ interface SearchResult {
   answer: string;
   chunks: SearchResultChunk[];
   prompt: string;
+  contextChunksCount: number;
 }
 
 export class SearchService {
@@ -35,7 +37,7 @@ export class SearchService {
     let contextChunks: SearchResultChunk[];
     if (useReranker) {
       allChunks = await this.rerankChunks(query, allChunks);
-      contextChunks = allChunks.slice(0, LLM_CONTEXT_LIMIT);
+      contextChunks = allChunks.filter(chunk => (chunk.rerankerScore ?? 0) > RERANKER_SCORE_THRESHOLD);
     } else {
       allChunks.sort((a, b) => b.vectorScore - a.vectorScore);
       contextChunks = allChunks.slice(0, LLM_CONTEXT_LIMIT);
@@ -45,7 +47,7 @@ export class SearchService {
     const { systemPrompt, userMessage } = this.buildPrompt(contextChunks, query);
     const answer = await this.generateAnswer(systemPrompt, userMessage);
 
-    return { answer, chunks: allChunks, prompt: userMessage };
+    return { answer, chunks: allChunks, prompt: userMessage, contextChunksCount: contextChunks.length };
   }
 
   private async embedQuery(query: string): Promise<number[]> {

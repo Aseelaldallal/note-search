@@ -7,9 +7,10 @@ import './LLMPrompt.css';
 
 interface LLMPromptProps {
   prompt: string;
+  contextChunksCount: number;
 }
 
-const LLMPrompt: React.FC<LLMPromptProps> = ({ prompt }) => {
+const LLMPrompt: React.FC<LLMPromptProps> = ({ prompt, contextChunksCount }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   if (!prompt) {
@@ -24,22 +25,25 @@ const LLMPrompt: React.FC<LLMPromptProps> = ({ prompt }) => {
         aria-expanded={isExpanded}
       >
         <h2>LLM Prompt</h2>
-        <svg
-          className={`chevron ${isExpanded ? 'expanded' : ''}`}
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M6 9L12 15L18 9"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <div className="prompt-header-right">
+          <span className="context-count">{contextChunksCount} chunks used for context</span>
+          <svg
+            className={`chevron ${isExpanded ? 'expanded' : ''}`}
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M6 9L12 15L18 9"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
       </button>
       <div className={`prompt-content ${isExpanded ? 'expanded' : ''}`}>
         <div className="prompt-markdown">

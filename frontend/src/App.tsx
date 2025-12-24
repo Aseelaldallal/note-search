@@ -20,6 +20,7 @@ function App() {
   const [hasSearched, setHasSearched] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [searchDuration, setSearchDuration] = useState<number | null>(null);
+  const [contextChunksCount, setContextChunksCount] = useState<number>(0);
 
   const handleSearch = async () => {
     if (!query.trim()) return;
@@ -42,6 +43,7 @@ function App() {
       setChunks(data.chunks);
       setLlmPrompt(data.prompt);
       setLlmAnswer(data.answer);
+      setContextChunksCount(data.contextChunksCount);
       setHasSearched(true);
     } catch (error) {
       console.error('Search failed:', error);
@@ -72,7 +74,7 @@ function App() {
               <LLMAnswer answer={llmAnswer} />
               <DebugSection duration={searchDuration}>
                 <RetrievedChunks chunks={chunks} useReranker={useReranker} />
-                <LLMPrompt prompt={llmPrompt} />
+                <LLMPrompt prompt={llmPrompt} contextChunksCount={contextChunksCount} />
               </DebugSection>
             </>
           )}
