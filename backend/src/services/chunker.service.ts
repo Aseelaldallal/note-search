@@ -18,8 +18,6 @@ import OpenAI from 'openai';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import { ChunkRepository, ChunkWithSimilarity } from '../repositories/chunk.repository';
 
-const SIMILARITY_LIMIT = 10;
-
 export class ChunkerService {
   constructor(
     private readonly chunkRepository: ChunkRepository,
@@ -59,7 +57,7 @@ export class ChunkerService {
     console.log(`✅ Finished processing: ${originalName}, created ${docs.length} chunks`);
   }
 
-  public async findSimilarChunks(embedding: number[]): Promise<ChunkWithSimilarity[]> {
-    return this.chunkRepository.findSimilar(embedding, SIMILARITY_LIMIT);
+  public async findSimilarChunks(embedding: number[], limit: number): Promise<ChunkWithSimilarity[]> {
+    return this.chunkRepository.findSimilar(embedding, limit);
   }
 }
