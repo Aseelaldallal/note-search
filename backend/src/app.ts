@@ -22,7 +22,7 @@ export async function createApp(): Promise<Express> {
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   const chunkRepository = new ChunkRepository(db);
   const chunkerService = new ChunkerService(chunkRepository, openai);
-  boss.work('process-file', createProcessFileHandler(chunkerService));
+  boss.work('process-file', { batchSize: 3 }, createProcessFileHandler(chunkerService));
   console.log('✅ pg-boss worker registered');
 
   // Middleware
