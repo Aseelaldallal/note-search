@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 import Header from './components/Header';
 import SearchSection from './components/SearchSection';
@@ -21,6 +21,19 @@ function App() {
   const [isSearching, setIsSearching] = useState(false);
   const [searchDuration, setSearchDuration] = useState<number | null>(null);
   const [contextChunksCount, setContextChunksCount] = useState<number>(0);
+  const isInitialMount = useRef(true);
+
+  // Re-search when reranker toggle changes (after initial search)
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    if (hasSearched && query.trim()) {
+      handleSearch();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [useReranker]);
 
   const handleSearch = async () => {
     if (!query.trim()) return;
