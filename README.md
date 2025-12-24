@@ -40,7 +40,7 @@ Before running this application, make sure you have the following installed:
 
 - **Node.js** (version 14 or higher)
 - **npm** (comes with Node.js)
-- **PostgreSQL** with a database called `note_search`
+- **PostgreSQL** with a database called `note_search` and the **pgvector** extension installed
 
 To check if you have Node.js and npm installed, run:
 ```bash
@@ -48,9 +48,10 @@ node --version
 npm --version
 ```
 
-To create the database:
+To create the database and enable pgvector:
 ```bash
 createdb note_search
+psql -d note_search -c "CREATE EXTENSION IF NOT EXISTS vector;"
 ```
 
 ## Installation & Setup
@@ -64,7 +65,16 @@ cd backend
 npm install
 ```
 
-### Step 2: Install Frontend Dependencies
+### Step 2: Run Database Migrations
+
+Make sure you have created the database and enabled pgvector (see Prerequisites), then run:
+
+```bash
+cd backend
+npm run migrate:up
+```
+
+### Step 3: Install Frontend Dependencies
 
 Open a new terminal window/tab, navigate to the frontend directory and install dependencies:
 
