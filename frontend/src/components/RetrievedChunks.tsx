@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Chunk } from '../types';
@@ -90,6 +91,7 @@ const RetrievedChunks: React.FC<RetrievedChunksProps> = ({ chunks }) => {
               </div>
               <div className="chunk-content">
                 <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
                   components={{
                     code({ node, className, children, ...props }) {
                       const match = /language-(\w+)/.exec(className || '');

@@ -201,6 +201,30 @@
   color: #64748b;
 }
 
+.chunk-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.5em 0;
+  font-size: 0.9em;
+}
+
+.chunk-content th,
+.chunk-content td {
+  border: 1px solid #e2e8f0;
+  padding: 6px 10px;
+  text-align: left;
+}
+
+.chunk-content th {
+  background-color: #f8fafc;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.chunk-content tr:nth-child(even) {
+  background-color: #f8fafc;
+}
+
 @media (max-width: 640px) {
   .retrieved-chunks {
     padding: 16px;

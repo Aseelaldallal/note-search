@@ -119,6 +119,30 @@
   color: #64748b;
 }
 
+.prompt-markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.5em 0;
+  font-size: 0.9em;
+}
+
+.prompt-markdown th,
+.prompt-markdown td {
+  border: 1px solid #e2e8f0;
+  padding: 6px 10px;
+  text-align: left;
+}
+
+.prompt-markdown th {
+  background-color: #f8fafc;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.prompt-markdown tr:nth-child(even) {
+  background-color: #f8fafc;
+}
+
 @media (max-width: 640px) {
   .llm-prompt {
     padding: 16px;

@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import './LLMAnswer.css';
@@ -37,6 +38,7 @@ const LLMAnswer: React.FC<LLMAnswerProps> = ({ answer }) => {
       </div>
       <div className="answer-content">
         <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
           components={{
             code({ node, className, children, ...props }) {
               const match = /language-(\w+)/.exec(className || '');
