@@ -7,7 +7,7 @@ import { ChunkRepository } from './repositories/chunk.repository';
 import { ChunkerService } from './services/chunker.service';
 import { createProcessFileHandler } from './workers/chunker.worker';
 import { createUploadRouter } from './routes/upload.routes.factory';
-import searchRoutes from './routes/search.routes';
+import { createSearchRouter } from './routes/search.routes.factory';
 
 export async function createApp(): Promise<Express> {
   const app = express();
@@ -15,8 +15,6 @@ export async function createApp(): Promise<Express> {
   // Dependencies
   const db = getDatabaseInstance();
   const boss = await getBossInstance();
-
-
 
   // Register workers
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -26,12 +24,14 @@ export async function createApp(): Promise<Express> {
   console.log('✅ pg-boss worker registered');
 
   // Middleware
+  app.use(express.json());
   app.use(cors());  // TODO: Any website can call API now
 
   // Routes
   const uploadRouter = await createUploadRouter();
+  const searchRouter = createSearchRouter();
   app.use('/api/upload', uploadRouter);
-  app.use('/api/search', searchRoutes);
+  app.use('/api/search', searchRouter);
 
   return app;
 }
