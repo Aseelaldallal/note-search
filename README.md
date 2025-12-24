@@ -81,13 +81,6 @@ cd backend
 npm run dev
 ```
 
-**Option B: Production Mode**
-```bash
-cd backend
-npm run build  # Compile TypeScript first
-npm start      # Run the compiled JavaScript
-```
-
 The backend server will start on **http://localhost:5001**
 
 You should see:
