@@ -13,18 +13,26 @@ interface RetrievedChunksProps {
 
 const TRUNCATE_LENGTH = 100;
 
+type SortBy = 'vector' | 'reranker';
+
 const RetrievedChunks: React.FC<RetrievedChunksProps> = ({ chunks, useReranker }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
+  const [sortBy, setSortBy] = useState<SortBy>(useReranker ? 'reranker' : 'vector');
+
+  // Reset sortBy when useReranker changes
+  React.useEffect(() => {
+    setSortBy(useReranker ? 'reranker' : 'vector');
+  }, [useReranker]);
 
   const sortedChunks = React.useMemo(() => {
     return [...chunks].sort((a, b) => {
-      if (useReranker && a.rerankerScore !== undefined && b.rerankerScore !== undefined) {
+      if (sortBy === 'reranker' && a.rerankerScore !== undefined && b.rerankerScore !== undefined) {
         return b.rerankerScore - a.rerankerScore;
       }
       return b.vectorScore - a.vectorScore;
     });
-  }, [chunks, useReranker]);
+  }, [chunks, sortBy]);
 
   const toggleExpand = (id: number) => {
     setExpandedIds(prev => {
@@ -75,6 +83,26 @@ const RetrievedChunks: React.FC<RetrievedChunksProps> = ({ chunks, useReranker }
           </svg>
         </div>
       </button>
+      {useReranker && !isCollapsed && (
+        <div className="sort-controls">
+          <div className="sort-toggle">
+            <span className="sort-label">Sort by</span>
+            <button
+              className={`sort-btn ${sortBy === 'vector' ? 'active' : ''}`}
+              onClick={(e) => { e.stopPropagation(); setSortBy('vector'); }}
+            >
+              Vector
+            </button>
+            <button
+              className={`sort-btn ${sortBy === 'reranker' ? 'active' : ''}`}
+              onClick={(e) => { e.stopPropagation(); setSortBy('reranker'); }}
+            >
+              Reranker
+            </button>
+          </div>
+          <span className="context-note">Top 10 reranked results used for LLM context</span>
+        </div>
+      )}
       <div className={`chunks-list ${!isCollapsed ? 'expanded' : ''}`}>
         {sortedChunks.map((chunk, index) => {
           const isExpanded = expandedIds.has(chunk.id);
