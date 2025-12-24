@@ -19,11 +19,13 @@ function App() {
   const [llmAnswer, setLlmAnswer] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [searchDuration, setSearchDuration] = useState<number | null>(null);
 
   const handleSearch = async () => {
     if (!query.trim()) return;
 
     setIsSearching(true);
+    const startTime = Date.now();
     try {
       const response = await fetch('http://localhost:5001/api/search', {
         method: 'POST',
@@ -36,6 +38,7 @@ function App() {
       const data = await response.json();
       console.log('Search response:', data);
 
+      setSearchDuration(Date.now() - startTime);
       setChunks(data.chunks);
       setLlmPrompt(data.prompt);
       setLlmAnswer(data.answer);
@@ -67,7 +70,7 @@ function App() {
           {hasSearched && !isSearching && (
             <>
               <LLMAnswer answer={llmAnswer} />
-              <DebugSection>
+              <DebugSection duration={searchDuration}>
                 <RetrievedChunks chunks={chunks} useReranker={useReranker} />
                 <LLMPrompt prompt={llmPrompt} />
               </DebugSection>

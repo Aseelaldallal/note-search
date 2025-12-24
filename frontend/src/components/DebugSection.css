@@ -53,6 +53,15 @@
   border-radius: 12px;
 }
 
+.debug-duration {
+  font-size: 12px;
+  font-weight: 500;
+  color: #059669;
+  background-color: #ecfdf5;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
 .debug-header .chevron {
   color: #94a3b8;
   transition: transform 0.2s ease;

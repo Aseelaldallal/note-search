@@ -3,9 +3,10 @@ import './DebugSection.css';
 
 interface DebugSectionProps {
   children: React.ReactNode;
+  duration?: number | null;
 }
 
-const DebugSection: React.FC<DebugSectionProps> = ({ children }) => {
+const DebugSection: React.FC<DebugSectionProps> = ({ children, duration }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -65,6 +66,9 @@ const DebugSection: React.FC<DebugSectionProps> = ({ children }) => {
           </div>
           <span className="debug-title">Debug Info</span>
           <span className="debug-badge">Developer</span>
+          {duration !== null && duration !== undefined && (
+            <span className="debug-duration">{duration}ms</span>
+          )}
         </div>
         <svg
           className={`chevron ${isExpanded ? 'expanded' : ''}`}
