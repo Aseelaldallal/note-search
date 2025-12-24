@@ -1,4 +1,16 @@
-// Preserved chunking/embedding logic - will be wired up later as a worker
+export interface ProcessFileJobData {
+  filePath: string;
+  originalName: string;
+}
+
+export async function processFileHandler(jobs: { data: ProcessFileJobData }[]): Promise<void> {
+  for (const job of jobs) {
+    console.log('Picked up job:', job.data);
+  }
+}
+
+/*
+// Preserved chunking/embedding logic - will be wired up later
 import fs from 'fs/promises';
 import OpenAI from 'openai';
 
@@ -11,11 +23,6 @@ interface Chunk {
   filename: string;
   chunkIndex: number;
   embedding?: number[];
-}
-
-export interface ProcessFileJobData {
-  filePath: string;
-  originalName: string;
 }
 
 export async function processFile(data: ProcessFileJobData): Promise<void> {
@@ -65,3 +72,4 @@ export async function processFile(data: ProcessFileJobData): Promise<void> {
 
   console.log(`✅ Finished processing: ${originalName}`);
 }
+*/
