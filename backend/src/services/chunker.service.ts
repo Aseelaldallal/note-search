@@ -16,7 +16,9 @@
 import fs from 'fs/promises';
 import OpenAI from 'openai';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
-import { ChunkRepository } from '../repositories/chunk.repository';
+import { ChunkRepository, ChunkWithSimilarity } from '../repositories/chunk.repository';
+
+const SIMILARITY_LIMIT = 10;
 
 export class ChunkerService {
   constructor(
@@ -24,7 +26,7 @@ export class ChunkerService {
     private readonly openai: OpenAI
   ) {}
 
-  async processFile(filePath: string, originalName: string): Promise<void> {
+  public async processFile(filePath: string, originalName: string): Promise<void> {
     console.log(`Processing file: ${originalName}`);
 
     const content = await fs.readFile(filePath, 'utf-8');
@@ -55,5 +57,9 @@ export class ChunkerService {
     await fs.unlink(filePath);
 
     console.log(`✅ Finished processing: ${originalName}, created ${docs.length} chunks`);
+  }
+
+  public async findSimilarChunks(embedding: number[]): Promise<ChunkWithSimilarity[]> {
+    return this.chunkRepository.findSimilar(embedding, SIMILARITY_LIMIT);
   }
 }

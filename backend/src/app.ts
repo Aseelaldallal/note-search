@@ -29,7 +29,7 @@ export async function createApp(): Promise<Express> {
 
   // Routes
   const uploadRouter = await createUploadRouter();
-  const searchRouter = createSearchRouter();
+  const searchRouter = createSearchRouter(chunkerService, openai);
   app.use('/api/upload', uploadRouter);
   app.use('/api/search', searchRouter);
 

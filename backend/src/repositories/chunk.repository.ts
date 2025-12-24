@@ -48,7 +48,7 @@ export class ChunkRepository {
    *   Perpendicular  | 1               | 0
    *   Opposite       | 2               | -1
    */
-  public async findSimilar(embedding: number[], limit: number = 5): Promise<ChunkWithSimilarity[]> {
+  public async findSimilar(embedding: number[], limit: number ): Promise<ChunkWithSimilarity[]> {
     const embeddingStr = '[' + embedding.join(',') + ']';
 
     const result = await this.pool.query(
