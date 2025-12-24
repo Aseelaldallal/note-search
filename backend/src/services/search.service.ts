@@ -1,8 +1,9 @@
 import OpenAI from 'openai';
+import { CohereClientV2 } from 'cohere-ai';
 import { ChunkerService } from './chunker.service';
 import { ChunkWithSimilarity } from '../repositories/chunk.repository';
 
-const SIMILARITY_LIMIT = 10;
+const SIMILARITY_LIMIT = 20;
 
 interface SearchResult {
   answer: string;
@@ -13,12 +14,19 @@ interface SearchResult {
 export class SearchService {
   constructor(
     private readonly chunkerService: ChunkerService,
-    private readonly openai: OpenAI
+    private readonly openai: OpenAI,
+    private readonly cohere: CohereClientV2
   ) {}
 
-  public async search(query: string): Promise<SearchResult> {
+  // Getter to access cohere client for future reranking implementation
+  public get cohereClient(): CohereClientV2 {
+    return this.cohere;
+  }
+
+  public async search(query: string, useReranker: boolean): Promise<SearchResult> {
     // 1. Embed the query
-    console.log('Embedding query...');
+    console.log('Embedding query...', useReranker ? '(reranker enabled)' : '');
+    // TODO: Implement reranking with this.cohere when useReranker is true
     const embeddingResponse = await this.openai.embeddings.create({
       model: 'text-embedding-3-small',
       input: query
