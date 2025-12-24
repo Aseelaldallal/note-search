@@ -1,13 +1,21 @@
 import OpenAI from 'openai';
 import { CohereClientV2 } from 'cohere-ai';
 import { ChunkerService } from './chunker.service';
-import { ChunkWithSimilarity } from '../repositories/chunk.repository';
 
 const SIMILARITY_LIMIT = 20;
+const LLM_CONTEXT_LIMIT = 10;
+
+interface SearchResultChunk {
+  id: number;
+  sourceFilename: string;
+  content: string;
+  vectorScore: number;
+  rerankerScore?: number;
+}
 
 interface SearchResult {
   answer: string;
-  chunks: ChunkWithSimilarity[];
+  chunks: SearchResultChunk[];
   prompt: string;
 }
 
@@ -18,57 +26,95 @@ export class SearchService {
     private readonly cohere: CohereClientV2
   ) {}
 
-  // Getter to access cohere client for future reranking implementation
-  public get cohereClient(): CohereClientV2 {
-    return this.cohere;
+  public async search(query: string, useReranker: boolean): Promise<SearchResult> {
+    console.log('Embedding query...', useReranker ? '(reranker enabled)' : '');
+
+    const embedding = await this.embedQuery(query);
+    let allChunks = await this.findAndMapChunks(embedding);
+
+    let contextChunks: SearchResultChunk[];
+    if (useReranker) {
+      allChunks = await this.rerankChunks(query, allChunks);
+      contextChunks = allChunks.slice(0, LLM_CONTEXT_LIMIT);
+    } else {
+      allChunks.sort((a, b) => b.vectorScore - a.vectorScore);
+      contextChunks = allChunks.slice(0, LLM_CONTEXT_LIMIT);
+      allChunks = contextChunks;
+    }
+
+    const { systemPrompt, userMessage } = this.buildPrompt(contextChunks, query);
+    const answer = await this.generateAnswer(systemPrompt, userMessage);
+
+    return { answer, chunks: allChunks, prompt: userMessage };
   }
 
-  public async search(query: string, useReranker: boolean): Promise<SearchResult> {
-    // 1. Embed the query
-    console.log('Embedding query...', useReranker ? '(reranker enabled)' : '');
-    // TODO: Implement reranking with this.cohere when useReranker is true
-    const embeddingResponse = await this.openai.embeddings.create({
+  private async embedQuery(query: string): Promise<number[]> {
+    const response = await this.openai.embeddings.create({
       model: 'text-embedding-3-small',
       input: query
     });
-    const queryEmbedding = embeddingResponse.data[0].embedding;
+    return response.data[0].embedding;
+  }
 
-    // 2. Find similar chunks
-    const chunks = await this.chunkerService.findSimilarChunks(queryEmbedding, SIMILARITY_LIMIT);
-    console.log(`Found ${chunks.length} similar chunks`);
+  private async findAndMapChunks(embedding: number[]): Promise<SearchResultChunk[]> {
+    const vectorChunks = await this.chunkerService.findSimilarChunks(embedding, SIMILARITY_LIMIT);
+    console.log(`Found ${vectorChunks.length} similar chunks`);
 
-    // 3. Build prompt
+    return vectorChunks.map(chunk => ({
+      id: chunk.id,
+      sourceFilename: chunk.sourceFilename,
+      content: chunk.content,
+      vectorScore: chunk.similarity
+    }));
+  }
+
+  private async rerankChunks(query: string, chunks: SearchResultChunk[]): Promise<SearchResultChunk[]> {
+    console.log('Reranking chunks with Cohere...');
+
+    const response = await this.cohere.rerank({
+      model: 'rerank-english-v3.0',
+      query,
+      documents: chunks.map(chunk => chunk.content)
+    });
+
+    for (const result of response.results) {
+      chunks[result.index].rerankerScore = result.relevanceScore;
+    }
+
+    chunks.sort((a, b) => (b.rerankerScore ?? 0) - (a.rerankerScore ?? 0));
+    console.log(`Using top ${LLM_CONTEXT_LIMIT} reranked chunks for LLM context`);
+
+    return chunks;
+  }
+
+  private buildPrompt(contextChunks: SearchResultChunk[], query: string): { systemPrompt: string; userMessage: string } {
     const systemPrompt = [
       'You are a helpful assistant that answers questions based only on the provided context.',
       'If the answer cannot be found in the context, say "I don\'t have that information in the provided documents."',
       'Do not make up information or use knowledge outside of the provided context. Don\'t go out of scope, and stay brief'
     ].join('\n');
 
-    const contextBlock = chunks
-      .map((chunk, i) => `[Source: ${chunk.sourceFilename}]\n${chunk.content}`)
+    const contextBlock = contextChunks
+      .map(chunk => `[Source: ${chunk.sourceFilename}]\n${chunk.content}`)
       .join('\n\n---\n\n');
 
     const userMessage = `Context:\n${contextBlock}\n\n---\n\nQuestion: ${query}`;
 
-    // 4. Call OpenAI chat completion
-    const chatResponse = await this.openai.chat.completions.create({
+    return { systemPrompt, userMessage };
+  }
+
+  private async generateAnswer(systemPrompt: string, userMessage: string): Promise<string> {
+    const response = await this.openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
-        // system: Instructions for LLM behavior. Sets "persona" and rules. Treated as high-priority guidance.
         { role: 'system', content: systemPrompt },
-        // user: The human's message. What you're asking or providing.
         { role: 'user', content: userMessage }
       ]
     });
 
-    const answer = chatResponse.choices[0].message.content ?? '';
+    const answer = response.choices[0].message.content ?? '';
     console.log('LLM response:', answer);
 
-    // 5. Return result
-    return {
-      answer,
-      chunks,
-      prompt: userMessage
-    };
+    return answer;
   }
 }

@@ -13,13 +13,18 @@ interface RetrievedChunksProps {
 
 const TRUNCATE_LENGTH = 100;
 
-const RetrievedChunks: React.FC<RetrievedChunksProps> = ({ chunks }) => {
+const RetrievedChunks: React.FC<RetrievedChunksProps> = ({ chunks, useReranker }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
 
   const sortedChunks = React.useMemo(() => {
-    return [...chunks].sort((a, b) => b.similarity - a.similarity);
-  }, [chunks]);
+    return [...chunks].sort((a, b) => {
+      if (useReranker && a.rerankerScore !== undefined && b.rerankerScore !== undefined) {
+        return b.rerankerScore - a.rerankerScore;
+      }
+      return b.vectorScore - a.vectorScore;
+    });
+  }, [chunks, useReranker]);
 
   const toggleExpand = (id: number) => {
     setExpandedIds(prev => {
@@ -85,8 +90,14 @@ const RetrievedChunks: React.FC<RetrievedChunksProps> = ({ chunks }) => {
                 <div className="chunk-scores">
                   <div className="score">
                     <span className="score-label">VECTOR</span>
-                    <span className="score-value">{chunk.similarity.toFixed(2)}</span>
+                    <span className="score-value">{chunk.vectorScore.toFixed(2)}</span>
                   </div>
+                  {useReranker && chunk.rerankerScore !== undefined && (
+                    <div className="score">
+                      <span className="score-label">RERANK</span>
+                      <span className="score-value">{chunk.rerankerScore.toFixed(2)}</span>
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="chunk-content">
