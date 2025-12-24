@@ -14,11 +14,13 @@
     "setup": "npm run migrate:up && ts-node src/scripts/setup.ts"
   },
   "dependencies": {
+    "@langchain/textsplitters": "^1.0.1",
     "@types/multer": "^2.0.0",
     "class-transformer": "^0.5.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^4.18.2",
+    "langchain": "^1.2.3",
     "multer": "^2.0.2",
     "node-pg-migrate": "^8.0.4",
     "openai": "^6.8.1",
