@@ -7,20 +7,22 @@
  * If chunks are broken (code blocks split, missing context, headers gone),
  * it doesn't matter how smart your retrieval or LLM is — garbage in, garbage out.
  *
- * Current (simplistic approach:
+ * Current (simplistic) approach:
  * - RecursiveCharacterTextSplitter with markdown-aware separators
  * - Splits by: # headers → ## headers → **bold** → paragraphs → lines → spaces
  * - 100 char overlap to preserve context at chunk boundaries
  */
 
 import fs from 'fs/promises';
+import OpenAI from 'openai';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import { ChunkRepository } from '../repositories/chunk.repository';
 
 export class ChunkerService {
-  constructor(private readonly chunkRepository: ChunkRepository) {
-    void this.chunkRepository; // Will use when implementing DB persistence
-  }
+  constructor(
+    private readonly chunkRepository: ChunkRepository,
+    private readonly openai: OpenAI
+  ) {}
 
   async processFile(filePath: string, originalName: string): Promise<void> {
     console.log(`Processing file: ${originalName}`);
@@ -36,8 +38,18 @@ export class ChunkerService {
     const docs = await splitter.createDocuments([content]);
 
     for (let i = 0; i < docs.length; i++) {
-      console.log(`Will now call OpenAI to generate embedding for chunk ${i}`);
-      console.log(`  Preview: ${docs[i].pageContent.substring(0, 100)}...`);
+      const response = await this.openai.embeddings.create({
+        model: 'text-embedding-3-small',
+        input: docs[i].pageContent
+      });
+
+      await this.chunkRepository.insertChunk({
+        source_filename: originalName,
+        content: docs[i].pageContent,
+        embedding: response.data[0].embedding
+      });
+
+      console.log(`Embedded and stored chunk ${i + 1}/${docs.length}`);
     }
 
     await fs.unlink(filePath);

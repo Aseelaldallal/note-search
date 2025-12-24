@@ -1,5 +1,6 @@
 import express, { Express } from 'express';
 import cors from 'cors';
+import OpenAI from 'openai';
 import { getDatabaseInstance } from './database/db.factory';
 import { getBossInstance } from './queue/boss.factory';
 import { ChunkRepository } from './repositories/chunk.repository';
@@ -14,10 +15,13 @@ export async function createApp(): Promise<Express> {
   // Dependencies
   const db = getDatabaseInstance();
   const boss = await getBossInstance();
-  const chunkRepository = new ChunkRepository(db);
-  const chunkerService = new ChunkerService(chunkRepository);
+
+
 
   // Register workers
+  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const chunkRepository = new ChunkRepository(db);
+  const chunkerService = new ChunkerService(chunkRepository, openai);
   boss.work('process-file', createProcessFileHandler(chunkerService));
   console.log('✅ pg-boss worker registered');
 
