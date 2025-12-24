@@ -10,7 +10,8 @@
     "dev:build": "tsc --watch",
     "migrate:up": "node-pg-migrate up",
     "migrate:down": "node-pg-migrate down",
-    "migrate:create": "node-pg-migrate create"
+    "migrate:create": "node-pg-migrate create",
+    "setup": "npm run migrate:up && ts-node src/scripts/setup.ts"
   },
   "dependencies": {
     "@types/multer": "^2.0.0",

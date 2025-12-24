@@ -65,14 +65,16 @@ cd backend
 npm install
 ```
 
-### Step 2: Run Database Migrations
+### Step 2: Run Setup (Migrations + Queues)
 
 Make sure you have created the database and enabled pgvector (see Prerequisites), then run:
 
 ```bash
 cd backend
-npm run migrate:up
+npm run setup
 ```
+
+This runs database migrations and creates the required job queues.
 
 ### Step 3: Install Frontend Dependencies
 
