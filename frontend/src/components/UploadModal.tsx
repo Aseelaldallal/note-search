@@ -87,13 +87,32 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose }) => {
 
     setIsUploading(true);
 
-    // Stub: simulate upload delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append('files', file);
+    });
 
-    console.log('Files to upload:', files);
-    setFiles([]);
-    setIsUploading(false);
-    onClose();
+    try {
+      const response = await fetch('http://localhost:5001/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Upload successful:', result);
+        setFiles([]);
+        onClose();
+      } else {
+        console.error('Upload failed');
+        alert('Upload failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      alert('Error uploading files. Please make sure the server is running.');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleButtonClick = () => {
