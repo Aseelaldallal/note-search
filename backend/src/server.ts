@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 // Must be before any other imports that use env vars
 dotenv.config();
 
-import { app } from './app';
+import { createApp } from './app';
 import { getDatabaseInstance } from './database/db.factory';
 import { getBossInstance } from './queue/boss.factory';
 import { shutdown } from './shutdown';
@@ -19,6 +19,9 @@ async function startServer() {
     // Initialize pg-boss
     await getBossInstance();
     console.log('✅ pg-boss started');
+
+    // Create app with async routes
+    const app = await createApp();
 
     console.log('✅ Starting server');
 

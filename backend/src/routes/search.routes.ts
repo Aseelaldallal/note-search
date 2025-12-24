@@ -3,6 +3,6 @@ import { search } from '../controllers/search.controller';
 
 const router = Router();
 
-router.post('/api/search', search);
+router.post('/', search);
 
 export default router;
