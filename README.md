@@ -40,11 +40,17 @@ Before running this application, make sure you have the following installed:
 
 - **Node.js** (version 14 or higher)
 - **npm** (comes with Node.js)
+- **PostgreSQL** with a database called `note_search`
 
 To check if you have Node.js and npm installed, run:
 ```bash
 node --version
 npm --version
+```
+
+To create the database:
+```bash
+createdb note_search
 ```
 
 ## Installation & Setup
