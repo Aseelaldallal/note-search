@@ -18,14 +18,30 @@ function App() {
   const [llmAnswer, setLlmAnswer] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (!query.trim()) return;
 
-    // Stub: use mock data for now
-    setChunks(mockChunks);
-    setLlmPrompt(mockLLMPrompt);
-    setLlmAnswer(mockLLMAnswer);
-    setHasSearched(true);
+    try {
+      const response = await fetch('http://localhost:5001/api/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query }),
+      });
+
+      const data = await response.json();
+      console.log('Search response:', data);
+
+      // TODO: Update state with actual response data once backend returns it
+      // For now, still using mock data for display
+      setChunks(mockChunks);
+      setLlmPrompt(mockLLMPrompt);
+      setLlmAnswer(mockLLMAnswer);
+      setHasSearched(true);
+    } catch (error) {
+      console.error('Search failed:', error);
+    }
   };
 
   return (
