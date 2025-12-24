@@ -1,3 +1,4 @@
+import { Pool } from 'pg';
 import { plainToInstance } from 'class-transformer';
 import { Database } from '../database/db';
 import { Chunk } from '../models/chunk.model';
@@ -5,17 +6,20 @@ import { Chunk } from '../models/chunk.model';
 export type ChunkWithSimilarity = Omit<Chunk, 'embedding'> & { similarity: number };
 
 export class ChunkRepository {
-  constructor(private readonly db: Database) {}
+  private readonly pool: Pool;
+
+  constructor(db: Database) {
+    this.pool = db.getPool();
+  }
 
   public async insertChunk(chunk: {
     source_filename: string;
     content: string;
     embedding: number[];
   }): Promise<Chunk> {
-    const pool = this.db.getPool();
     const embeddingStr = '[' + chunk.embedding.join(',') + ']';
 
-    const result = await pool.query(
+    const result = await this.pool.query(
       `INSERT INTO chunks (source_filename, content, embedding)
        VALUES ($1, $2, $3)
        RETURNING id, source_filename, content`,
@@ -45,10 +49,9 @@ export class ChunkRepository {
    *   Opposite       | 2               | -1
    */
   public async findSimilar(embedding: number[], limit: number = 5): Promise<ChunkWithSimilarity[]> {
-    const pool = this.db.getPool();
     const embeddingStr = '[' + embedding.join(',') + ']';
 
-    const result = await pool.query(
+    const result = await this.pool.query(
       `SELECT id, source_filename, content,
               1 - (embedding <=> $1) AS similarity
        FROM chunks
