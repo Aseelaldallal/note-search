@@ -7,6 +7,7 @@ import LLMPrompt from './components/LLMPrompt';
 import LLMAnswer from './components/LLMAnswer';
 import DebugSection from './components/DebugSection';
 import UploadModal from './components/UploadModal';
+import SearchingIndicator from './components/SearchingIndicator';
 import { Chunk } from './types';
 
 function App() {
@@ -17,10 +18,12 @@ function App() {
   const [llmPrompt, setLlmPrompt] = useState('');
   const [llmAnswer, setLlmAnswer] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
 
   const handleSearch = async () => {
     if (!query.trim()) return;
 
+    setIsSearching(true);
     try {
       const response = await fetch('http://localhost:5001/api/search', {
         method: 'POST',
@@ -39,6 +42,8 @@ function App() {
       setHasSearched(true);
     } catch (error) {
       console.error('Search failed:', error);
+    } finally {
+      setIsSearching(false);
     }
   };
 
@@ -54,9 +59,12 @@ function App() {
             useReranker={useReranker}
             onRerankerChange={setUseReranker}
             onSearch={handleSearch}
+            isSearching={isSearching}
           />
 
-          {hasSearched && (
+          {isSearching && <SearchingIndicator />}
+
+          {hasSearched && !isSearching && (
             <>
               <LLMAnswer answer={llmAnswer} />
               <DebugSection>

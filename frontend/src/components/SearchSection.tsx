@@ -8,6 +8,7 @@ interface SearchSectionProps {
   useReranker: boolean;
   onRerankerChange: (useReranker: boolean) => void;
   onSearch: () => void;
+  isSearching: boolean;
 }
 
 const SearchSection: React.FC<SearchSectionProps> = ({
@@ -16,6 +17,7 @@ const SearchSection: React.FC<SearchSectionProps> = ({
   useReranker,
   onRerankerChange,
   onSearch,
+  isSearching,
 }) => {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -42,29 +44,54 @@ const SearchSection: React.FC<SearchSectionProps> = ({
           onChange={(e) => onQueryChange(e.target.value)}
           onKeyDown={handleKeyDown}
         />
-        <button className="search-button" onClick={onSearch}>
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <circle
-              cx="11"
-              cy="11"
-              r="8"
-              stroke="currentColor"
-              strokeWidth="2"
-            />
-            <path
-              d="M21 21L16.65 16.65"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          </svg>
-          Search
+        <button
+          className="search-button"
+          onClick={onSearch}
+          disabled={isSearching}
+        >
+          {isSearching ? (
+            <svg
+              className="spinner"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeDasharray="31.4 31.4"
+              />
+            </svg>
+          ) : (
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle
+                cx="11"
+                cy="11"
+                r="8"
+                stroke="currentColor"
+                strokeWidth="2"
+              />
+              <path
+                d="M21 21L16.65 16.65"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+          )}
+          {isSearching ? 'Searching...' : 'Search'}
         </button>
       </div>
     </div>

@@ -1,0 +1,97 @@
+.searching-indicator {
+  background-color: #eef2ff;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.searching-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.searching-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: #6366f1;
+  border-radius: 10px;
+  color: white;
+}
+
+.searching-spinner svg {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.searching-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.searching-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #3730a3;
+}
+
+.searching-subtitle {
+  font-size: 13px;
+  color: #6366f1;
+}
+
+.searching-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background-color: white;
+  border-radius: 8px;
+}
+
+.skeleton-line {
+  height: 12px;
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  border-radius: 6px;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeleton-line-1 {
+  width: 100%;
+}
+
+.skeleton-line-2 {
+  width: 85%;
+}
+
+.skeleton-line-3 {
+  width: 70%;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .searching-indicator {
+    padding: 16px;
+  }
+}

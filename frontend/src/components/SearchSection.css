@@ -67,6 +67,24 @@
   background-color: #4338ca;
 }
 
+.search-button:disabled {
+  background-color: #a5b4fc;
+  cursor: not-allowed;
+}
+
+.search-button .spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 640px) {
   .search-section {
     padding: 16px;
