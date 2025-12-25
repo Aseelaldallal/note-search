@@ -2,8 +2,7 @@ import { Pool } from 'pg';
 import { plainToInstance } from 'class-transformer';
 import { Database } from '../database/db';
 import { Chunk } from '../models/chunk.model';
-
-export type ChunkWithSimilarity = Omit<Chunk, 'embedding'> & { vectorScore: number };
+import type { ChunkWithSimilarity } from '../types';
 
 export class ChunkRepository {
   private readonly pool: Pool;

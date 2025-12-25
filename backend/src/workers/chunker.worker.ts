@@ -1,9 +1,5 @@
 import { ChunkerService } from '../services/chunker.service';
-
-export interface ProcessFileJobData {
-  filePath: string;
-  originalName: string;
-}
+import type { ProcessFileJobData } from '../types';
 
 export function createProcessFileHandler(chunkerService: ChunkerService) {
   return async (jobs: { data: ProcessFileJobData }[]): Promise<void> => {

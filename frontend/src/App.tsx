@@ -8,7 +8,7 @@ import LLMAnswer from './components/LLMAnswer';
 import DebugSection from './components/DebugSection';
 import UploadModal from './components/UploadModal';
 import SearchingIndicator from './components/SearchingIndicator';
-import { SearchResultChunk } from '../../shared/types';
+import type { SearchResultChunk } from '../../shared/types';
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);

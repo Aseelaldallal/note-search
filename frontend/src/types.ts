@@ -1,4 +1,4 @@
-import { SearchResultChunk } from '../../shared/types';
+import type { SearchResultChunk } from '../../shared/types';
 
 export interface SearchState {
   query: string;

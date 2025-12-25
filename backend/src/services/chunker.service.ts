@@ -16,7 +16,8 @@
 import fs from 'fs/promises';
 import OpenAI from 'openai';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
-import { ChunkRepository, ChunkWithSimilarity } from '../repositories/chunk.repository';
+import { ChunkRepository } from '../repositories/chunk.repository';
+import type { ChunkWithSimilarity } from '../types';
 
 export class ChunkerService {
   constructor(

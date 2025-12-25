@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
 import { CohereClientV2 } from 'cohere-ai';
 import { ChunkerService } from './chunker.service';
-import { SearchResultChunk, SearchResult } from '../../../shared/types';
+import type { SearchResultChunk, SearchResult } from '../../../shared/types';
 
 const SIMILARITY_LIMIT = 20;
 const LLM_CONTEXT_LIMIT = 10;
