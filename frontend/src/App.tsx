@@ -8,13 +8,13 @@ import LLMAnswer from './components/LLMAnswer';
 import DebugSection from './components/DebugSection';
 import UploadModal from './components/UploadModal';
 import SearchingIndicator from './components/SearchingIndicator';
-import { Chunk } from './types';
+import { SearchResultChunk } from '../../shared/types';
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [useReranker, setUseReranker] = useState(false);
-  const [chunks, setChunks] = useState<Chunk[]>([]);
+  const [chunks, setChunks] = useState<SearchResultChunk[]>([]);
   const [llmPrompt, setLlmPrompt] = useState('');
   const [llmAnswer, setLlmAnswer] = useState('');
   const [hasSearched, setHasSearched] = useState(false);

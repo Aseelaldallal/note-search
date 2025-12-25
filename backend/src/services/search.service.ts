@@ -1,25 +1,11 @@
 import OpenAI from 'openai';
 import { CohereClientV2 } from 'cohere-ai';
 import { ChunkerService } from './chunker.service';
+import { SearchResultChunk, SearchResult } from '../../../shared/types';
 
 const SIMILARITY_LIMIT = 20;
 const LLM_CONTEXT_LIMIT = 10;
 const RERANKER_SCORE_THRESHOLD = 0.3;
-
-interface SearchResultChunk {
-  id: number;
-  sourceFilename: string;
-  content: string;
-  vectorScore: number;
-  rerankerScore?: number;
-}
-
-interface SearchResult {
-  answer: string;
-  chunks: SearchResultChunk[];
-  prompt: string;
-  contextChunksCount: number;
-}
 
 export class SearchService {
   constructor(
@@ -66,7 +52,7 @@ export class SearchService {
       id: chunk.id,
       sourceFilename: chunk.sourceFilename,
       content: chunk.content,
-      vectorScore: chunk.similarity
+      vectorScore: chunk.vectorScore
     }));
   }
 

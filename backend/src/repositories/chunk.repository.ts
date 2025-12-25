@@ -3,7 +3,7 @@ import { plainToInstance } from 'class-transformer';
 import { Database } from '../database/db';
 import { Chunk } from '../models/chunk.model';
 
-export type ChunkWithSimilarity = Omit<Chunk, 'embedding'> & { similarity: number };
+export type ChunkWithSimilarity = Omit<Chunk, 'embedding'> & { vectorScore: number };
 
 export class ChunkRepository {
   private readonly pool: Pool;
@@ -53,7 +53,7 @@ export class ChunkRepository {
 
     const result = await this.pool.query(
       `SELECT id, source_filename, content,
-              1 - (embedding <=> $1) AS similarity
+              1 - (embedding <=> $1) AS vector_score
        FROM chunks
        ORDER BY embedding <=> $1
        LIMIT $2`,
@@ -65,7 +65,7 @@ export class ChunkRepository {
       // are included in the result. The Chunk model uses @Expose for id, sourceFilename,
       // and content, but marks embedding with @Exclude - so embedding won't be returned.
       ...plainToInstance(Chunk, row, { excludeExtraneousValues: true }),
-      similarity: row.similarity
+      vectorScore: row.vector_score
     }));
   }
 }

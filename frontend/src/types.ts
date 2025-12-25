@@ -1,15 +1,9 @@
-export interface Chunk {
-  id: number;
-  sourceFilename: string;
-  content: string;
-  vectorScore: number;
-  rerankerScore?: number;
-}
+import { SearchResultChunk } from '../../shared/types';
 
 export interface SearchState {
   query: string;
   useReranker: boolean;
-  chunks: Chunk[];
+  chunks: SearchResultChunk[];
   llmPrompt: string;
   llmAnswer: string;
   hasSearched: boolean;
