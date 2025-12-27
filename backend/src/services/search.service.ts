@@ -7,7 +7,7 @@ import type { SearchResultChunk, SearchResult } from '../../../shared/types';
 
 const SIMILARITY_LIMIT = 20;
 const LLM_CONTEXT_LIMIT = 10;
-const RERANKER_SCORE_THRESHOLD = 0.3;
+const RERANKER_SCORE_THRESHOLD = 0.2;
 
 @injectable()
 export class SearchService {
