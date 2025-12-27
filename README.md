@@ -1,175 +1,116 @@
-# File Upload Application
+# RAG Learning Project
 
-A modern file upload application built with React and TypeScript (frontend) and Node.js/Express with TypeScript (backend).
+A simplified Retrieval Augmented Generation (RAG) system built to understand how the core components work together.
+
+## What It Does
+
+Upload markdown documents, then ask questions in natural language. The system retrieves relevant chunks from your documents and generates answers grounded in that content.
+
+![Search Interface](general.png)
 
 ## Features
 
-- **Drag & Drop Interface**: Easily drag and drop files or click to select
-- **Multiple File Support**: Upload multiple files at once
-- **Real-time File Preview**: See files before uploading with file size information
-- **Responsive Design**: Works seamlessly on desktop and mobile devices
-- **Modern UI**: Clean, gradient-based design with smooth animations
+- **Document upload** — Upload `.md` files which are automatically chunked, embedded, and indexed
+- **Natural language search** — Ask questions like "What's the refund policy?" instead of keyword matching
+- **Vector similarity search** — Finds semantically relevant content even without exact word matches
+- **Reranker toggle** — Compare results with and without Cohere reranking to see how it affects retrieval quality
+- **Debug view** — Inspect retrieved chunks, similarity scores, reranker scores, and the full prompt sent to the LLM
 
-## Project Structure
+## Debug View
+
+The debug panel lets you see exactly what's happening under the hood:
+
+![Debug Info](debuginfo.png)
+
+Expand "Retrieved Chunks" to see how each chunk was scored:
+
+![Retrieved Chunks](chunks.png)
+
+Each chunk shows both **Vector** and **Rerank** scores side-by-side. This lets you compare how the two ranking methods differ:
+- **Vector score**: Cosine similarity between query embedding and chunk embedding (fast, but purely geometric)
+- **Rerank score**: Cohere's cross-encoder relevance score (slower, but understands the actual question-answer relationship)
+
+You can sort by either score to see how rankings change. Notice how a chunk might rank high by vector similarity but low by reranker (or vice versa) — this illustrates why two-stage retrieval improves quality.
+
+## Reranker Trade-offs
+
+| Reranker | Speed | Quality | Best For |
+|----------|-------|---------|----------|
+| **Off** | ~200ms faster | Vector similarity only | Straightforward queries, lower latency requirements |
+| **On** | Additional API call | More accurate retrieval | Ambiguous queries where multiple chunks seem similar but only some answer the question |
+
+## Purpose
+
+This project ties together the key components of a RAG system:
+
+- **Embeddings** — Converting text to vectors using OpenAI's embedding API
+- **Vector Search** — Storing and querying vectors with pgvector (PostgreSQL extension)
+- **Chunking** — Splitting documents into searchable pieces
+- **Reranking** — Using Cohere's rerank API to improve retrieval quality
+- **LLM Integration** — Generating answers from retrieved context using GPT-4o-mini
+
+**This is a learning exercise, not production code. Chunking is intentionally basic. The goal was to understand the end-to-end flow, not optimize individual components.**
+
+## Architecture Overview
 
 ```
-.
-├── backend/          # Node.js Express TypeScript server
-│   ├── src/
-│   │   └── server.ts # Express server with upload endpoint
-│   ├── dist/         # Compiled JavaScript (generated)
-│   ├── tsconfig.json # TypeScript configuration
-│   └── package.json  # Backend dependencies
-│
-├── frontend/         # React TypeScript application
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── FileUpload.tsx    # Main file upload component
-│   │   │   └── FileUpload.css    # Component styles
-│   │   ├── App.tsx               # Main app component
-│   │   ├── App.css               # App styles
-│   │   └── index.tsx             # Entry point
-│   └── package.json              # Frontend dependencies
-│
-└── README.md         # This file
+┌─────────────────────────────────────────────────────────────────┐
+│                         Frontend (React)                        │
+│                    Search UI with debug info                    │
+└─────────────────────────────────────────────────────────────────┘
+                                 │
+                                 ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                        Backend (Express)                        │
+│                                                                 │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────────────┐ │
+│  │   Upload    │    │   Search    │    │   Chunker Worker    │ │
+│  │  Controller │    │  Controller │    │   (pg-boss queue)   │ │
+│  └─────────────┘    └─────────────┘    └─────────────────────┘ │
+│         │                  │                     │              │
+│         ▼                  ▼                     ▼              │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │                      Services Layer                         ││
+│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  ││
+│  │  │UploadService │  │SearchService │  │  ChunkerService  │  ││
+│  │  └──────────────┘  └──────────────┘  └──────────────────┘  ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                              │                                  │
+│         ┌────────────────────┼────────────────────┐            │
+│         ▼                    ▼                    ▼            │
+│  ┌─────────────┐      ┌─────────────┐      ┌─────────────┐    │
+│  │   OpenAI    │      │   Cohere    │      │  pgvector   │    │
+│  │ (embeddings │      │ (reranker)  │      │ (PostgreSQL)│    │
+│  │  + chat)    │      │             │      │             │    │
+│  └─────────────┘      └─────────────┘      └─────────────┘    │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-## Prerequisites
+## The RAG Flow
 
-Before running this application, make sure you have the following installed:
+1. **Upload**: Documents are uploaded → chunked → embedded → stored in pgvector
+2. **Search**: User query is embedded → vector similarity search finds candidates
+3. **Rerank** (optional): Cohere reranker scores chunks by relevance to the question
+4. **Generate**: Top chunks + query sent to LLM → answer generated
 
-- **Node.js** (version 14 or higher)
-- **npm** (comes with Node.js)
-- **PostgreSQL** with a database called `note_search` and the **pgvector** extension installed
+## Additional Tools
 
-To check if you have Node.js and npm installed, run:
-```bash
-node --version
-npm --version
-```
+- **pg-boss** — PostgreSQL-based job queue for async document processing. Alternative to SQS/RabbitMQ that keeps everything in Postgres.
+- **Inversify** — Dependency injection container. Built without NestJS to maintain explicit control over DI and adhere to SOLID principles.
 
-To create the database and enable pgvector:
-```bash
-createdb note_search
-psql -d note_search -c "CREATE EXTENSION IF NOT EXISTS vector;"
-```
+## Tech Stack
 
-## Installation & Setup
+| Component | Technology |
+|-----------|------------|
+| Backend | Express + TypeScript |
+| Frontend | React |
+| Database | PostgreSQL + pgvector |
+| Embeddings | OpenAI text-embedding-3-small |
+| Reranker | Cohere rerank-english-v3.0 |
+| LLM | GPT-4o-mini |
+| Job Queue | pg-boss |
+| DI | Inversify |
 
-### Step 1: Install Backend Dependencies
+## Setup
 
-Navigate to the backend directory and install dependencies:
-
-```bash
-cd backend
-npm install
-```
-
-### Step 2: Run Setup (Migrations + Queues)
-
-Make sure you have created the database and enabled pgvector (see Prerequisites), then run:
-
-```bash
-cd backend
-npm run setup
-```
-
-This runs database migrations and creates the required job queues.
-
-### Step 3: Install Frontend Dependencies
-
-Open a new terminal window/tab, navigate to the frontend directory and install dependencies:
-
-```bash
-cd frontend
-npm install
-```
-
-## Running the Application
-
-You need to run both the backend server and the frontend application.
-
-### Step 1: Start the Backend Server
-
-In the backend directory, you have two options:
-
-**Option A: Development Mode (Recommended)**
-```bash
-cd backend
-npm run dev
-```
-
-The backend server will start on **http://localhost:5001**
-
-You should see:
-```
-Server is running on port 5001
-Visit http://localhost:5001
-```
-
-### Step 2: Start the Frontend Application
-
-In a **new terminal window/tab**, navigate to the frontend directory:
-
-```bash
-cd frontend
-npm start
-```
-
-The React application will start and automatically open in your browser at **http://localhost:3000**
-
-If it doesn't open automatically, manually open your browser and go to http://localhost:3000
-
-## How to Use
-
-1. **Start both servers**: Make sure both the backend (port 5001) and frontend (port 3000) are running
-2. **Open the application**: Go to http://localhost:3000 in your browser
-3. **Upload files**:
-   - Drag and drop files onto the upload area, OR
-   - Click the "Select Files" button to choose files from your computer
-4. **Review files**: See the list of files you're about to upload with their sizes
-5. **Remove files**: Click the × button next to any file to remove it from the upload list
-6. **Upload**: Click the "Upload X file(s)" button to send files to the server
-7. **View uploaded files**: Successfully uploaded files will appear in the "Uploaded Files" section
-
-## Development
-
-### Backend Development
-
-The backend server uses TypeScript with nodemon and ts-node for development. To run in development mode:
-
-```bash
-cd backend
-npm run dev
-```
-
-This will automatically restart the server when you make changes to TypeScript files in the `src` directory.
-
-To watch TypeScript compilation in a separate terminal:
-```bash
-cd backend
-npm run dev:build
-```
-
-### Frontend Development
-
-The React development server (started with `npm start`) automatically reloads when you make changes to the frontend code.
-
-## Technologies Used
-
-### Backend
-- **Node.js**: JavaScript runtime
-- **Express**: Web framework for Node.js
-- **TypeScript**: Type-safe JavaScript with strong typing
-- **CORS**: Cross-Origin Resource Sharing middleware
-- **ts-node**: TypeScript execution for Node.js
-
-### Frontend
-- **React**: UI library
-- **TypeScript**: Type-safe JavaScript with strong typing
-- **CSS3**: Modern styling with gradients and animations
-
-
-## License
-
-This is a sample application for educational purposes.
+See [SETUP.md](SETUP.md) for installation instructions and required environment variables.
