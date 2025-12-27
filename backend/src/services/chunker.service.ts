@@ -13,16 +13,19 @@
  * - 100 char overlap to preserve context at chunk boundaries
  */
 
+import { injectable, inject } from 'inversify';
 import fs from 'fs/promises';
 import OpenAI from 'openai';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
+import { TOKENS } from '../container';
 import { ChunkRepository } from '../repositories/chunk.repository';
 import type { ChunkWithSimilarity } from '../types';
 
+@injectable()
 export class ChunkerService {
   constructor(
-    private readonly chunkRepository: ChunkRepository,
-    private readonly openai: OpenAI
+    @inject(TOKENS.ChunkRepository) private readonly chunkRepository: ChunkRepository,
+    @inject(TOKENS.OpenAI) private readonly openai: OpenAI
   ) {}
 
   public async processFile(filePath: string, originalName: string): Promise<void> {

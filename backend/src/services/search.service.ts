@@ -1,5 +1,7 @@
+import { injectable, inject } from 'inversify';
 import OpenAI from 'openai';
 import { CohereClientV2 } from 'cohere-ai';
+import { TOKENS } from '../container';
 import { ChunkerService } from './chunker.service';
 import type { SearchResultChunk, SearchResult } from '../../../shared/types';
 
@@ -7,11 +9,12 @@ const SIMILARITY_LIMIT = 20;
 const LLM_CONTEXT_LIMIT = 10;
 const RERANKER_SCORE_THRESHOLD = 0.3;
 
+@injectable()
 export class SearchService {
   constructor(
-    private readonly chunkerService: ChunkerService,
-    private readonly openai: OpenAI,
-    private readonly cohere: CohereClientV2
+    @inject(TOKENS.ChunkerService) private readonly chunkerService: ChunkerService,
+    @inject(TOKENS.OpenAI) private readonly openai: OpenAI,
+    @inject(TOKENS.Cohere) private readonly cohere: CohereClientV2
   ) {}
 
   public async search(query: string, useReranker: boolean): Promise<SearchResult> {

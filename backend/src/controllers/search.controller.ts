@@ -1,8 +1,11 @@
+import { injectable, inject } from 'inversify';
 import { Request, Response } from 'express';
+import { TOKENS } from '../container';
 import { SearchService } from '../services/search.service';
 
+@injectable()
 export class SearchController {
-  constructor(private readonly searchService: SearchService) {}
+  constructor(@inject(TOKENS.SearchService) private readonly searchService: SearchService) {}
 
   async handleSearch(req: Request, res: Response): Promise<void> {
     const { query, useReranker = false } = req.body ?? {};

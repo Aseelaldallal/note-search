@@ -1,13 +1,16 @@
+import { injectable, inject } from 'inversify';
 import { Pool } from 'pg';
 import { plainToInstance } from 'class-transformer';
+import { TOKENS } from '../container';
 import { Database } from '../database/db';
 import { Chunk } from '../models/chunk.model';
 import type { ChunkWithSimilarity } from '../types';
 
+@injectable()
 export class ChunkRepository {
   private readonly pool: Pool;
 
-  constructor(db: Database) {
+  constructor(@inject(TOKENS.Database) db: Database) {
     this.pool = db.getPool();
   }
 

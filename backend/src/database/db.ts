@@ -1,9 +1,15 @@
+import { injectable, inject } from 'inversify';
 import { Pool, PoolClient } from 'pg';
+import { TOKENS } from '../container';
 
+// @injectable() is required because in container.ts we bind this class with:
+//   container.bind<Database>(TOKENS.Database).to(Database).inSingletonScope()
+// Since we use .to(Database), Inversify creates the instance, so @injectable() is required.
+@injectable()
 export class Database {
   private pool: Pool;
 
-  constructor(connectionString: string) {
+  constructor(@inject(TOKENS.DatabaseUrl) connectionString: string) {
     this.pool = new Pool({ connectionString });
 
     this.pool.on('connect', () => {

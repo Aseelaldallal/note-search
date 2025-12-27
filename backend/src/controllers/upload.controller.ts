@@ -1,8 +1,12 @@
+import { injectable, inject } from 'inversify';
 import { Request, Response } from 'express';
+import { TOKENS } from '../container';
 import { UploadService } from '../services/upload.service';
 
+@injectable()
 export class UploadController {
-  constructor(private readonly uploadService: UploadService) {}
+  // @inject(TOKEN) tells Inversify "look up what's bound to this token and pass it as this parameter"
+  constructor(@inject(TOKENS.UploadService) private readonly uploadService: UploadService) {}
 
   async uploadFiles(req: Request, res: Response): Promise<void> {
     try {

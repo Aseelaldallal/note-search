@@ -1,39 +1,31 @@
 import express, { Express } from 'express';
 import cors from 'cors';
-import OpenAI from 'openai';
-import { CohereClientV2 } from 'cohere-ai';
-import { getDatabaseInstance } from './database/db.factory';
-import { getBossInstance } from './queue/boss.factory';
-import { ChunkRepository } from './repositories/chunk.repository';
+import { PgBoss } from 'pg-boss';
+import { getContainer, TOKENS } from './container';
 import { ChunkerService } from './services/chunker.service';
 import { createProcessFileHandler } from './workers/chunker.worker';
-import { createUploadRouter } from './routes/upload.routes.factory';
-import { createSearchRouter } from './routes/search.routes.factory';
+import { createUploadRouter } from './routes/upload.routes';
+import { createSearchRouter } from './routes/search.routes';
 
-export async function createApp(): Promise<Express> {
+export function createApp(): Express {
   const app = express();
+  const container = getContainer();
 
-  // Dependencies
-  const db = getDatabaseInstance();
-  const boss = await getBossInstance();
-  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  const cohere = new CohereClientV2({ token: process.env.COHERE_API_KEY });
-  const chunkRepository = new ChunkRepository(db);
-  const chunkerService = new ChunkerService(chunkRepository, openai);
+  // Get dependencies from container
+  const boss = container.get<PgBoss>(TOKENS.PgBoss);
+  const chunkerService = container.get<ChunkerService>(TOKENS.ChunkerService);
 
   // Register workers
   boss.work('process-file', { batchSize: 3 }, createProcessFileHandler(chunkerService));
-  console.log('✅ pg-boss worker registered');
+  console.log('pg-boss worker registered');
 
   // Middleware
   app.use(express.json());
-  app.use(cors());  //Any website can call API now
+  app.use(cors());
 
   // Routes
-  const uploadRouter = await createUploadRouter();
-  const searchRouter = createSearchRouter(chunkerService, openai, cohere);
-  app.use('/api/upload', uploadRouter);
-  app.use('/api/search', searchRouter);
+  app.use('/api/upload', createUploadRouter());
+  app.use('/api/search', createSearchRouter());
 
   return app;
 }
